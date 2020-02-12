@@ -1,0 +1,179 @@
+#include<stdio.h>
+#include<stdlib.h>
+#define MAX_VERTEX_NUM 20
+#define TRUE 1
+#define FALSE 0
+
+typedef char VertexType;
+typedef enum { UDG, DG } GraphType;
+typedef struct
+{
+	VertexType Vertex[MAX_VERTEX_NUM];
+	int arcs[MAX_VERTEX_NUM][MAX_VERTEX_NUM];
+	GraphType Mtype;
+	int arcnum, vernum;    //图当前的定点数和弧（或边）数
+}MGraph;
+
+void CreateMGraph(MGraph *MG)
+{
+	int i, j, k, m, row = 0, line = 0;
+	VertexType c, tail, top;
+	printf("请输入图的类型1（有向图），0为无向图：");
+	scanf("%d", &MG->Mtype);
+	printf("\n请输入顶点数：");
+	scanf("%d", &MG->vernum);
+	printf("\n请输入边数：");
+	scanf("%d", &MG->arcnum);
+	getchar();
+	//初始化邻接矩阵
+	for (i = 0; i < MG->vernum; i++)
+		for (j = 0; j < MG->vernum; j++)
+			MG->arcs[i][j] = 0;
+	//初始化顶点数组
+	printf("\n请输入顶点元素：");
+	scanf("%c", &c);
+	for (k = 0; k < MG->vernum; k++)
+	{
+		MG->Vertex[k] = c;
+		scanf("%c", &c);
+	}
+	//getchar();
+	//输入图的边
+	for (m = 0; m < MG->arcnum; m++)
+	{
+		printf("\n请输入第%dth条边：", m + 1);
+		scanf("%c", &tail);
+		scanf("%c", &top);
+		//根据边写入对应邻接矩阵
+		for (i = 0; i < MG->vernum; i++)
+		{
+			if (MG->Vertex[i] == tail)
+			{
+				row = i;
+				break;
+			}
+		}
+		for (j = 0; j < MG->vernum; j++)
+		{
+			if (MG->Vertex[j] == top)
+			{
+				line = j;
+				break;
+			}
+		}
+		if (row != line)
+			MG->arcs[row][line] = MG->arcs[line][row] = 1;    //无向图邻接矩阵沿对角线对称
+		else
+			printf("\n输入第%dth条边出错，请重试", m);
+		getchar();
+	}
+
+}
+
+void printMG(MGraph MG)
+{
+	int i, j;
+	for (i = 0; i < MG.vernum; i++)
+	{
+		printf("\n");
+		for (j = 0; j < MG.vernum; j++)
+			printf("%d ", MG.arcs[i][j]);
+	}
+	printf("\n\n");
+}
+
+void GraphBFS(MGraph MG)
+{
+	//初始化visit数组，0表示顶点还没有搜索，1表示顶点已搜索
+	int i, j, visit[MAX_VERTEX_NUM] = { 0 };
+	//初始化队列，这里用队列的顺序存储结构：一维数组，外加一个记录队列头元素位置的变量front、一个记录队列尾元素位置的变量rear
+	VertexType Queue[MAX_VERTEX_NUM];
+	int front = 0, rear = 0;  //即分别指向数组下标
+	//选图第一个顶点入队列
+	Queue[rear++] = MG.Vertex[0];
+	visit[0] = 1;
+	while (rear != front)
+	{
+		//顶点出队列
+		printf("队列弹出的BFS顶点依次为：%c\n", Queue[front]);
+		for (i = 0; i < MG.vernum; i++)
+		{
+			if (MG.Vertex[i] == Queue[front])
+			{
+				for (j = 0; j < MG.vernum; j++)
+				{
+					//顶点入队列
+					if (MG.arcs[i][j] == 1 && visit[j] == 0)
+					{
+						Queue[rear++] = MG.Vertex[j];
+						visit[j] = 1;
+					}
+				}
+				break;
+			}
+		}
+		front++;
+	}
+	//只考虑简单情况，即图是连通图，一次广度优先搜索就能遍历所有顶点
+	for (i = 0; i < MG.vernum; i++)
+		if (0 == visit[i]) printf("BFS错误，检查图是否有误，是否是连通图，请重试！\n");
+}
+
+void GraphDFS(MGraph MG)
+{
+	//初始化visit数组，0表示顶点还没有搜索，1表示顶点已搜索
+	int i, j, k, bool = TRUE, visit[MAX_VERTEX_NUM] = { 0 };
+	//初始化堆栈，这里用堆栈的顺序存储结构：一维数组，外加一个记录栈顶元素位置的变量top、一个记录栈底元素位置的变量base
+	VertexType Stack[MAX_VERTEX_NUM];
+	int top = 0, base = 0;  //即分别指向数组下标
+	//选图第一个顶点入栈
+	Stack[top++] = MG.Vertex[0];
+	visit[0] = 1;
+	printf("\n入栈DFS顶点依次为：%c\n", Stack[top - 1]);
+	k = 0;
+	while (top != base)
+	{
+		while (bool)
+		{
+			bool = FALSE;
+			for (j = 0; j < MG.vernum; j++)
+			{
+				//顶点入栈
+				if (1 == MG.arcs[k][j] && 0 == visit[j])
+				{
+					bool = TRUE;
+					Stack[top++] = MG.Vertex[j];
+					visit[j] = 1;
+					printf("入栈DFS顶点依次为：%c\n", Stack[top - 1]);
+					k = j;
+					break;
+				}
+			}
+		}
+		//顶点出栈
+		top--;
+		if (top != base)
+		{
+			for (i = 0; i < MG.vernum; i++)
+				if (Stack[top - 1] == MG.Vertex[i])
+				{
+					bool = TRUE;
+					k = i;
+					break;
+				}
+		}
+	}
+	//只考虑简单情况，即图是连通图，一次深度优先搜索就能遍历所有顶点
+	for (i = 0; i < MG.vernum; i++)
+		if (0 == visit[i]) printf("DFS错误，检查图是否有误，是否是连通图，请重试！\n");
+}
+
+int main()
+{
+	MGraph MG;
+	CreateMGraph(&MG);
+	printMG(MG);
+	GraphBFS(MG);
+	GraphDFS(MG);
+	getchar();
+}
