@@ -168,6 +168,34 @@ void GraphDFS(MGraph MG)
 		if (0 == visit[i]) printf("DFS错误，检查图是否有误，是否是连通图，请重试！\n");
 }
 
+////用递归的方式深度优先搜索图，代码就显得很简单
+//TraverseGraph(int k, MGraph MG, int visit[])
+//{
+//	int j;
+//	for (j = 0; j < MG.vernum; j++)
+//		if (MG.arcs[k][j] == 1 && visit[j] == 0)
+//		{
+//			visit[j] = 1;
+//			k = j;
+//			printf("DFS顶点依次为：%c\n", MG.Vertex[k]);
+//			TraverseGraph(k, MG, visit);
+//		}
+//}
+//
+//void GraphDFS(MGraph MG)
+//{
+//	//初始化visit数组，0表示顶点还没有搜索，1表示顶点已搜索
+//	int i, k, visit[MAX_VERTEX_NUM] = { 0 };
+//	//给定第一个元素
+//	visit[0] = 1;
+//	k = 0;
+//	printf("\nDFS顶点依次为：%c\n", MG.Vertex[k]);
+//	TraverseGraph(k, MG, visit);
+//	//只考虑简单情况，即图是连通图，一次深度优先搜索就能遍历所有顶点
+//	for (i = 0; i < MG.vernum; i++)
+//		if (0 == visit[i]) printf("DFS错误，检查图是否有误，是否是连通图，请重试！\n");
+//}
+
 int main()
 {
 	MGraph MG;
